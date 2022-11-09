@@ -21,18 +21,19 @@ try:
         )
         """)
 except:
-    pass
+    print("the table creation cannot be execute and it throws error")
+    
 
 try:
     c.execute("""CREATE TABLE students (
             studentId text,
             name text,
             reg_status text,
-            uId text
+            U_ID text
         )
         """)
 except:
-    pass
+    print("the table creation cannot be executed and it throws error")
 
 # Create another table for courses and section
 try:
@@ -43,7 +44,7 @@ try:
         )
         """)
 except:
-    pass
+    print("the table creation cannot be executed and it throws error")
 
 
 
@@ -74,8 +75,8 @@ def reg_status_fn():
 
 
 
-
-def search_print(id_input,uId):
+query_string_1 = "SELECT rowid, * FROM students WHERE studentId = ? AND U_ID = ?"
+def search_print(id_input,U_ID):
     
     if id_input == 0:
         clear()
@@ -90,12 +91,13 @@ def search_print(id_input,uId):
         print('.',flush=True,end="")
 
 
-    c.execute("SELECT rowid, * FROM students WHERE studentId = ? AND uId = ?",(id_input,uId))
-    #c.execute("SELECT rowid, * FROM students WHERE uId = ?",(uId))
+    c.execute(query_string_1,(id_input,U_ID))
+    #c.execute("SELECT rowid, * FROM students WHERE U_ID = ?",(U_ID))
     infos = c.fetchall()
     #print(infos)
     if len(infos)>=1:
-        c.execute("SELECT * FROM courses WHERE reg_id = ?",(str(infos[0][0]),))
+        query_string_2 = "SELECT * FROM courses WHERE reg_id = ?"
+        c.execute(query_string_2,(str(infos[0][0]),))
         infos_course = c.fetchall()
         conn.commit()
         print('\nHere is the Student Information:\n')
@@ -116,11 +118,11 @@ def search_print(id_input,uId):
 
 
 
-def update_student(uId):
+def update_student(U_ID):
     clear()
     print('\n\t-----------Update Student Information-----------\n')
     id_input = input("ID Number: ")
-    c.execute("SELECT rowid, * FROM students WHERE studentId = ? AND uId = ?",(id_input,uId))
+    c.execute(query_string_1,(id_input,U_ID))
     infos = c.fetchall()
     if len(infos)>=1:
         print(f'\n\t-----------Update Information of ID: {id_input}------------\n\n')
@@ -130,8 +132,9 @@ def update_student(uId):
         while True:
             n = input("Enter 1, 2, 3 or 4: ")
             if n =='1':
+                query_update_1 = "UPDATE students SET name = ? WHERE studentId = ?"
                 name = input("Enter Updated Name: ")
-                c.execute("UPDATE students SET name = ? WHERE studentId = ?",(name,id_input))
+                c.execute(query_update_1,(name,id_input))
                 conn.commit()
 
             elif n == '2':
@@ -149,7 +152,7 @@ def update_student(uId):
                 
 
             elif n == '4':
-                search_print(id_input,uId)
+                search_print(id_input,U_ID)
                 return
     else:
         print("\nNot Found!!!")
@@ -158,11 +161,11 @@ def update_student(uId):
     
 
 
-def delete_student(uId):
+def delete_student(U_ID):
     clear()
     print('\n\t-----------Deleting (by Student ID)-----------\n')
     id_input = input('ID Number: ')
-    c.execute("SELECT rowid, * FROM students WHERE studentId = ? AND uId = ?",(id_input,uId))
+    c.execute(query_string_1,(id_input,U_ID))
     infos = c.fetchall()
     if len(infos)>=1:
         c.execute("DELETE FROM students WHERE studentId = ?",(id_input,))
@@ -176,16 +179,17 @@ def delete_student(uId):
         sleep(0.2)
         print('.',flush=True,end="")
         print('\nDeleted!!!')
+        
         #print('\nRegistration Deleted successfully of ID',id_input)
     else:
-        print("Not Found!!!")
+        print("Not Found")
     
     input('\nPress any key to continue...')
 
 
 
 
-def add_student(uId):
+def add_student(U_ID):
     clear()
     # Inputing data
     print('\n\t-----------Add Student (Enter these information Properly)-----------\n')
@@ -197,7 +201,7 @@ def add_student(uId):
     reg = reg_status_fn()
 
 
-    c.execute("INSERT INTO students VALUES (?,?,?,?)",(id_input,name,reg,uId))
+    c.execute("INSERT INTO students VALUES (?,?,?,?)",(id_input,name,reg,U_ID))
     reg_id = c.lastrowid
     id_course_sec = [(reg_id,) + item for item in course_sec]
     c.executemany("INSERT INTO courses VALUES (?,?,?)",id_course_sec)
@@ -205,20 +209,20 @@ def add_student(uId):
     conn.commit()
     
     print('Registration Recorded of ID',id_input)
-    search_print(id_input,uId)
+    search_print(id_input,U_ID)
 
 
 
-def menu(uId):
+def menu(U_ID):
     while True:
         clear()
         print('\n\t----------------Semester Registration System----------------\n\t\t\t     By The Dynamic DEVs\n\n')
         print('\t\t\t1. Add a New Student\n\t\t\t2. Search by Student ID\n\t\t\t3. Update Student Information\n\t\t\t4. Delete Registration Record\n\n')
         n = input("Enter 1, 2, 3, 4 and 'e' for exit: ")
-        if n =='1': add_student(uId)
-        elif n == '2': search_print(0,uId)
-        elif n == '3': update_student(uId)
-        elif n == '4': delete_student(uId)
+        if n =='1': add_student(U_ID)
+        elif n == '2': search_print(0,U_ID)
+        elif n == '3': update_student(U_ID)
+        elif n == '4': delete_student(U_ID)
         elif n == 'e': exit()
 
 
